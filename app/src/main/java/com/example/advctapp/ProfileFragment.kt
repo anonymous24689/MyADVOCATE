@@ -42,9 +42,9 @@ class ProfileFragment : Fragment() {
     private fun retrieveUserDetails(userId: String) {
         database.child(userId).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
-                val client = snapshot.getValue(Client::class.java)
-                usernameTv.text = client?.username ?: ""
-                mobileNoTv.text = client?.mobileNo ?: ""
+                val client = snapshot.getValue(ClientInfo::class.java)
+                usernameTv.text = client?.name ?: ""
+                mobileNoTv.text = client?.contact ?: ""
                 addressTv.text = client?.address ?: ""
             } else {
                 // Handle case where client is not found (e.g., show error message)
