@@ -26,16 +26,6 @@ class AppSignUp : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-//        // Check for existing logged in user
-//        val currentUser = auth.currentUser
-//        if (currentUser != null) {
-//            // User already logged in, navigate to MainActivity
-//            startActivity(Intent(this, MainActivity::class.java))
-//            finish() // Close login activity
-//            return
-//        }
-
-
         emailEt = findViewById(R.id.emailEt)
         passET = findViewById(R.id.passET)
         confirmPassEt = findViewById(R.id.confirmPassEt)
@@ -81,7 +71,6 @@ class AppSignUp : AppCompatActivity() {
                     }
                 }
         }
-
 
         // Navigate to Login Activity on Textview Click
         textView.setOnClickListener {

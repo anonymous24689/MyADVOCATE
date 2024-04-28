@@ -6,8 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 data class AdvocateRequest(
@@ -15,11 +21,11 @@ data class AdvocateRequest(
     val clientName: String,
 )
 
-
 class Advocate_IncomingRequest : AppCompatActivity() {
 
-    private lateinit var requestList: List<AdvocateRequest>
+    private lateinit var requestList: MutableList<AdvocateRequest>
     private lateinit var recyclerView: RecyclerView
+    private lateinit var database: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,23 +34,34 @@ class Advocate_IncomingRequest : AppCompatActivity() {
         recyclerView = findViewById(R.id.request_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        requestList = generateDummyRequestData()
+        requestList = mutableListOf()
+        database = FirebaseDatabase.getInstance().reference.child("ConsultationRequests")
 
-        val adapter = RequestAdapter(requestList)
-        recyclerView.adapter = adapter
+        fetchIncomingRequests()
     }
 
-    private fun generateDummyRequestData(): List<AdvocateRequest> {
-        val requests = mutableListOf<AdvocateRequest>()
-        for (i in 0..10) {
-            requests.add(
-                AdvocateRequest(
-                    "client_id_$i",
-                    "Client Name $i",
-                )
-            )
-        }
-        return requests
+    private fun fetchIncomingRequests() {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                requestList.clear()
+                for (dataSnapshot in snapshot.children) {
+                    val consultationRequest = dataSnapshot.getValue(ConsultationRequest::class.java)
+                    if (consultationRequest != null) {
+                        val advocateRequest = AdvocateRequest(
+                            consultationRequest.clientId,
+                            consultationRequest.clientName
+                        )
+                        requestList.add(advocateRequest)
+                    }
+                }
+                val adapter = RequestAdapter(requestList)
+                recyclerView.adapter = adapter
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@Advocate_IncomingRequest, "Error fetching requests: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
 

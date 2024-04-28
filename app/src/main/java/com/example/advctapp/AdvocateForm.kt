@@ -10,6 +10,7 @@ import com.google.firebase.database.FirebaseDatabase
 import de.hdodenhof.circleimageview.CircleImageView
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Button
 
 
 class AdvocateForm : AppCompatActivity() {
@@ -19,6 +20,7 @@ class AdvocateForm : AppCompatActivity() {
     private lateinit var mobileNoEt: TextInputEditText
     private lateinit var occupationEt: TextInputEditText
     private lateinit var addressEt: TextInputEditText
+    private lateinit var btn : Button
     private lateinit var database: DatabaseReference
 
     private val REQUEST_IMAGE_CODE = 100
@@ -33,41 +35,18 @@ class AdvocateForm : AppCompatActivity() {
         mobileNoEt = findViewById(R.id.mobileNoEt)
         occupationEt = findViewById(R.id.occupatET)
         addressEt = findViewById(R.id.addressET)
-
-//        profileImage.setOnClickListener {
-//            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//                openImageChooser()
-//            } else {
-//                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
-//            }
-//        }
+        btn = findViewById(R.id.button)
 
 
-        database = FirebaseDatabase.getInstance().reference.child("Advocates")
+        database = FirebaseDatabase.getInstance().reference.child("Users").child("Advocates")
 
-        findViewById<androidx.appcompat.widget.AppCompatButton>(R.id.button).setOnClickListener {
+        btn.setOnClickListener {
             saveAdvocateDetails()
+
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
         }
     }
-
-
-    private fun openImageChooser() {
-        val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, REQUEST_IMAGE_CODE)
-    }
-
-//    @Override
-//    override fun onRequestPermissionsResult(requestCode: Int, resultCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-////        super.onRequestPermissionsResult(requestCode, resultCode, permissions, grantResults)
-//
-//        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                openImageChooser()
-//            } else {
-//                Toast.makeText(this, "Storage permission is required to select an image", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
 
 
     private fun saveAdvocateDetails() {
@@ -75,6 +54,7 @@ class AdvocateForm : AppCompatActivity() {
         val mobileNo = mobileNoEt.text.toString().trim()
         val occupation = occupationEt.text.toString().trim()
         val address = addressEt.text.toString().trim()
+        val profile = "Advocate"
 
         // Validate data if needed (e.g., check if mobile number is valid)
         val mobileRegex = "^[0-9]{10}$".toRegex()
@@ -83,18 +63,16 @@ class AdvocateForm : AppCompatActivity() {
             return
         }
 
-        val advocate = Advocate(username, mobileNo, occupation, address)
+        val advocate = AdvocateInfo(profile, username, occupation, mobileNo, address)
 
         val advocateId = database.push().key ?: return
         database.child(advocateId).setValue(advocate)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Advocate details saved successfully!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Failed to save advocate details: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 }
-
-
-
-data class Advocate(
-    val username: String,
-    val mobileNo: String,
-    val occupation: String,
-    val address: String
-)

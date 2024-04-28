@@ -28,19 +28,19 @@ class ProfileFragment : Fragment() {
         addressTv = view.findViewById(R.id.address)
 
         // Get Firebase Database reference
-        database = FirebaseDatabase.getInstance().reference.child("Clients")
+        database = FirebaseDatabase.getInstance().reference.child("Users")
 
         // Retrieve client ID from arguments (replace with your logic)
-        val clientId = arguments?.getString("clientId") ?: return view
+        val userId = arguments?.getString("userId") ?: return view
 
         // Call function to retrieve and display user details
-        retrieveUserDetails(clientId)
+        retrieveUserDetails(userId)
 
         return view
     }
 
-    private fun retrieveUserDetails(clientId: String) {
-        database.child(clientId).get().addOnSuccessListener { snapshot ->
+    private fun retrieveUserDetails(userId: String) {
+        database.child(userId).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 val client = snapshot.getValue(Client::class.java)
                 usernameTv.text = client?.username ?: ""

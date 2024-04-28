@@ -10,10 +10,7 @@
         android:id="@+id/advocateImage"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_margin="8dp"
-        app:layout_constraintBottomToBottomOf="parent"
-        app:layout_constraintStartToStartOf="parent"
-        app:layout_constraintTopToTopOf="parent" />
+        android:layout_margin="8dp" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -74,7 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:drawableLeft="@drawable/baseline_call_24"  />
+                android:text="Call"  />
         </LinearLayout>
 
         <LinearLayout
@@ -94,7 +91,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:drawableLeft="@drawable/baseline_add_location_24"  />
+                android:text="Locate" />
         </LinearLayout>
     </LinearLayout>
 

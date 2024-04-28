@@ -13,20 +13,16 @@ import com.google.firebase.ktx.Firebase
 class HomeFragment : Fragment() {
 
     lateinit var tv:TextView
+    lateinit var btn:Button
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
 
         var inflater = inflater.inflate(R.layout.fragment_home, container, false)
 
         tv = inflater.findViewById(R.id.homefragmenttextview)
-        var bt = inflater.findViewById<Button>(R.id.bt)
+        btn = inflater.findViewById(R.id.go)
 
-        bt.setOnClickListener {
-            Toast.makeText(context, Firebase.auth.currentUser!!.uid, Toast.LENGTH_SHORT).show()
-        }
 
-        tv.text = Firebase.auth.currentUser!!.uid
 
         return inflater
     }
