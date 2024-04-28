@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "611058327528",
+    "project_id": "advctapp",
+    "storage_bucket": "advctapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:611058327528:android:0e480f41b84c09d3050e5d",
+        "android_client_info": {
+          "package_name": "com.example.advctapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgqp9PazczAVz5eDDbgX-bCVmkj1NCSes"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
