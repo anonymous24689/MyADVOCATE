@@ -38,33 +38,6 @@ class ProfileFragment : Fragment() {
         return view
     }
 
-//    private fun retrieveUserDetails(userId: String) {
-//        val userRef = database.child(userId)
-//        userRef.addListenerForSingleEventValue(object : ValueEventListener {
-//            override fun onDataChange(dataSnapshot: DataSnapshot) {
-//                if (dataSnapshot.exists()) {
-//                    val userData = dataSnapshot.getValue(UserData::class.java)
-//                    if (userData != null) {
-//                        // Update UI with user data
-//                        usernameTv.text = userData.username
-//                        emailTv.text = userData.email
-//                        mobileNoTv.text = userData.mobileNo
-//                        addressTv.text = userData.address
-//                    } else {
-//                        Toast.makeText(context, "Error retrieving user data", Toast.LENGTH_SHORT).show()
-//                    }
-//                } else {
-//                    Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                Toast.makeText(context, "Error fetching data: ${error.message}", Toast.LENGTH_SHORT).show()
-//            }
-//        })
-//    }
-
-//
 private fun retrieveUserDetails(userId: String) {
     database.child(userId).get().addOnSuccessListener { snapshot ->
         if (snapshot.exists()) {
