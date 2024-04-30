@@ -70,8 +70,9 @@ class AppLogIn : AppCompatActivity() {
 
         // Navigate to Signup Activity on Textview Click
         textView.setOnClickListener {
-            val intent = Intent(this, AppSignUp::class.java) // Replace with your Signup activity class name
+            val intent = Intent(this, SignUpPage::class.java) // Replace with your Signup activity class name
             startActivity(intent)
+            finish()
         }
     }
 }

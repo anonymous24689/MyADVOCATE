@@ -26,17 +26,24 @@ class ClientForm : AppCompatActivity() {
         addressEt = findViewById(R.id.addressET)
         btn = findViewById(R.id.button)
 
-        database = FirebaseDatabase.getInstance().reference.child("Users").child("Clients")
+        database = FirebaseDatabase.getInstance().reference.child("Users")
+
+        val userId = intent.getStringExtra("userId") ?: return
+        val profileType = intent.getStringExtra("profileType") ?: return
 
         btn.setOnClickListener {
-            saveClientDetails()
+            if (profileType == "client") {
+                saveClientDetails(userId)
+            } else {
+                Toast.makeText(this, "Choose Profile correctly.", Toast.LENGTH_SHORT).show()
+            }
 
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, AppLogIn::class.java)
             startActivity(intent)
         }
     }
 
-    private fun saveClientDetails() {
+    private fun saveClientDetails(userId: String) {
         val username = usernameEt.text.toString().trim()
         val mobileNo = mobileNoEt.text.toString().trim()
         val address = addressEt.text.toString().trim()
@@ -51,11 +58,22 @@ class ClientForm : AppCompatActivity() {
         }
 
         // Create a new Client object with details
-        val client = ClientInfo(profile, username, mobileNo, address)
+//        val client = ClientInfo(profile, username, mobileNo, address)
+        val client = ClientInfo(username, mobileNo, address)
 
         // Push data to Firebase Realtime Database
-        val clientId = database.push().key ?: return
-        database.child(clientId).setValue(client)
+//        val clientId = database.push().key ?: return
+//        database.child(clientId).setValue(client)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    Toast.makeText(this, "Client details saved successfully!", Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Toast.makeText(this, "Failed to save client details: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+
+        val userRef = database.child(userId)
+        userRef.child("profile").setValue(client)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Client details saved successfully!", Toast.LENGTH_SHORT).show()

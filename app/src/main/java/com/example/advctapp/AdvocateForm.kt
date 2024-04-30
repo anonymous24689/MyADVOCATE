@@ -23,8 +23,6 @@ class AdvocateForm : AppCompatActivity() {
     private lateinit var btn : Button
     private lateinit var database: DatabaseReference
 
-    private val REQUEST_IMAGE_CODE = 100
-    private val REQUEST_STORAGE_PERMISSION = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,23 +36,32 @@ class AdvocateForm : AppCompatActivity() {
         btn = findViewById(R.id.button)
 
 
-        database = FirebaseDatabase.getInstance().reference.child("Users").child("Advocates")
+        database = FirebaseDatabase.getInstance().reference.child("Users")
+
+        val userId = intent.getStringExtra("userId") ?: return
+        val profileType = intent.getStringExtra("profileType") ?: return
 
         btn.setOnClickListener {
-            saveAdvocateDetails()
 
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this,AppLogIn::class.java))
+
+            if (profileType == "advocate") {
+                saveAdvocateDetails(userId)
+
+            } else {
+                Toast.makeText(this, "Choose Profile correctly.", Toast.LENGTH_SHORT).show()
+            }
+
         }
     }
 
 
-    private fun saveAdvocateDetails() {
+    private fun saveAdvocateDetails(userId: String) {
         val username = usernameEt.text.toString().trim()
         val mobileNo = mobileNoEt.text.toString().trim()
         val occupation = occupationEt.text.toString().trim()
         val address = addressEt.text.toString().trim()
-        val profile = "Advocate"
+        val requestedBy = ""
 
         // Validate data if needed (e.g., check if mobile number is valid)
         val mobileRegex = "^[0-9]{10}$".toRegex()
@@ -63,13 +70,16 @@ class AdvocateForm : AppCompatActivity() {
             return
         }
 
-        val advocate = AdvocateInfo(profile, username, occupation, mobileNo, address)
+//        val advocate = AdvocateInfo(profile, username, occupation, mobileNo, address)
+        val advocate = AdvocateInfo(username, occupation, mobileNo, address, requestedBy)
 
-        val advocateId = database.push().key ?: return
-        database.child(advocateId).setValue(advocate)
+
+        val userRef = database.child(userId)
+        userRef.child("profile").setValue(advocate)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Advocate details saved successfully!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, AppLogIn::class.java))
                 } else {
                     Toast.makeText(this, "Failed to save advocate details: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }

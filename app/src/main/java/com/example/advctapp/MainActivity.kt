@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+
         if (savedInstanceState == null) {
             replaceFragment(HomeFragment())
             navView.setCheckedItem(R.id.home)
@@ -47,8 +49,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.home -> replaceFragment(HomeFragment())
             R.id.map -> replaceFragment(MapFragment())
+            R.id.webview -> replaceFragment(WebViewFragment())
+            R.id.brightness -> replaceFragment(BrightnessFragment())
             R.id.profile -> replaceFragment(ProfileFragment())
-//            R.id.about -> replaceFragment(AboutFragment())
             R.id.logout -> showLogoutConfirmation()
         }
         drawerLayout.closeDrawer(GravityCompat.START)

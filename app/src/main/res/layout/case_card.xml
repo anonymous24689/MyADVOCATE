@@ -10,7 +10,8 @@
         android:id="@+id/advocateImage"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_margin="8dp" />
+        android:layout_margin="8dp"
+        android:src="@drawable/profilepic"/>
 
     <LinearLayout
         android:layout_width="0dp"

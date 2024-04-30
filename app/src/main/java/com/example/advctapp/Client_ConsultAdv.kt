@@ -1,115 +1,264 @@
 package com.example.advctapp
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
-import androidx.recyclerview.widget.*
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
-
-data class ConsultationRequest(val clientId: String, val clientName: String, val advocateName: String)
-
+import com.google.firebase.ktx.Firebase
 
 
-class Client_ConsultAdv : AppCompatActivity() {
+interface ConsultationManager {
+    fun sendConsultationRequest(advocateUsername: String)
+}
 
-    private lateinit var advocateList: List<AdvocateInfo>
-    private lateinit var recyclerView: RecyclerView
-    lateinit var database: DatabaseReference
-    lateinit var auth: FirebaseAuth
+
+class Client_ConsultAdv : AppCompatActivity(), ConsultationManager {
+
+    private lateinit var advocateRecyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var advocateAdapter: AdvocateAdapter
+    private lateinit var database: FirebaseDatabase
+    private lateinit var reference: DatabaseReference
+    private lateinit var advocateList: ArrayList<AdvocateInfo>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_client_consultadv)
 
-        recyclerView = findViewById(R.id.advocate_recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        advocateRecyclerView = findViewById(R.id.advocate_recycler_view)
+        progressBar = findViewById(R.id.progress_bar)
+        advocateList = ArrayList()
 
+        database = FirebaseDatabase.getInstance()
+        reference = database.getReference("users")
 
-        database = FirebaseDatabase.getInstance().reference.child("users").child("Advocates")
-        auth = FirebaseAuth.getInstance()
-        fetchAdvocatesFromFirebase()
+        fetchAdvocateData()
+
+        advocateAdapter = AdvocateAdapter(this, advocateList, this)
+        advocateRecyclerView.layoutManager = LinearLayoutManager(this)
+        advocateRecyclerView.adapter = advocateAdapter
     }
 
-    // Function to fetch advocate data from Firebase
-    private fun fetchAdvocatesFromFirebase() {
-        val advocates = mutableListOf<AdvocateInfo>()
-        database.addValueEventListener(object : ValueEventListener {
+    private fun fetchAdvocateData() {
+        reference.addValueEventListener(object : ValueEventListener {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(snapshot: DataSnapshot) {
-                for (dataSnapshot in snapshot.children) {
-                    val advocate = dataSnapshot.getValue(AdvocateInfo::class.java)
-                    if (advocate != null) {
-                        advocates.add(advocate)
+                if (snapshot.exists()) {
+                    advocateList.clear()
+                    for (dataSnapshot in snapshot.children) {
+                        val user = dataSnapshot.getValue(UserData::class.java)
+
+                        // Check if data is valid and user is an advocate
+                        if (user != null && user.profileType == "advocate") {
+                            val username = user.username ?: ""
+                            val specialization = ""
+                            val requestedBy = user.requestedBy ?: ""
+                            val mobileNo = user.mobileNo ?: ""
+                            val address = user.address ?: ""
+
+                            val advocate = AdvocateInfo(username, specialization, mobileNo, address, requestedBy)
+                            advocateList.add(advocate)
+                        }
                     }
+
+                    // Check if advocateList is empty before notifying adapter
+                    if (advocateList.isNotEmpty()) {
+                        advocateAdapter.notifyDataSetChanged()
+                    } else {
+                        Toast.makeText(
+                            this@Client_ConsultAdv,
+                            "No advocates found",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    progressBar.visibility = View.GONE
+                } else {
+                    Toast.makeText(
+                        this@Client_ConsultAdv,
+                        "Error fetching data",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    progressBar.visibility = View.GONE
                 }
-                advocateList = advocates
-                val adapter = AdvocateAdapter(advocateList, this@Client_ConsultAdv)
-                recyclerView.adapter = adapter
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@Client_ConsultAdv, "Error fetching advocates: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@Client_ConsultAdv, "Error fetching data: ${error.message}", Toast.LENGTH_SHORT).show()
+                progressBar.visibility = View.GONE
             }
         })
     }
+
+
+//    override fun sendConsultationRequest(advocateUsername: String) {
+//        val currentUserReference = FirebaseDatabase.getInstance().getReference("users")
+//            .child(FirebaseAuth.getInstance().currentUser!!.uid)
+//        currentUserReference.get().addOnSuccessListener { snapshot ->
+//            if (snapshot.exists()) {
+//                val currentUser = snapshot.getValue(UserData::class.java)!!
+//                val clientId = Firebase.auth.currentUser!!.uid
+//
+//                val consultationRequest = ConsultationRequest(
+//                    clientId = clientId,
+//                    clientName = currentUser.username ?: "",
+//                    advocateId = advocateUsername,
+//                    advocateName = "",
+//                    specialization = "",
+//                    message = "", // Optional message field
+//                    status = "Pending"
+//                )
+//
+//                val consultationRequestsRef = FirebaseDatabase.getInstance().getReference("consultationRequests")
+//                consultationRequestsRef.push().setValue(consultationRequest)
+//                    .addOnSuccessListener { consultationRequestSnapshot ->
+//                        // Update advocate's requestedBy field after successful request creation
+//                        val advocateReference = FirebaseDatabase.getInstance().getReference("users")
+//                            .child(advocateUsername)
+//                        advocateReference.child("requestedBy").setValue(clientId)
+//                            .addOnSuccessListener {
+//                                Toast.makeText(this@Client_ConsultAdv, "Consultation request sent successfully!", Toast.LENGTH_SHORT).show()
+//                            }
+//                            .addOnFailureListener { exception ->
+//                                Toast.makeText(this@Client_ConsultAdv, "Error updating advocate data: ${exception.message}", Toast.LENGTH_SHORT).show()
+//                            }
+//                    }
+//                    .addOnFailureListener { exception ->
+//                        Toast.makeText(this@Client_ConsultAdv, "Error sending request: ${exception.message}", Toast.LENGTH_SHORT).show()
+//                    }
+//            } else {
+//                Toast.makeText(this@Client_ConsultAdv, "Error retrieving current user data", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
+//}
+
+    override fun sendConsultationRequest(advocateUsername: String) {
+        val currentUserReference = FirebaseDatabase.getInstance().getReference("users")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid)
+        currentUserReference.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                //val currentUser = snapshot.getValue(UserData::class.java)!!
+                val clientId = Firebase.auth.currentUser!!.uid
+                val advocateReference = FirebaseDatabase.getInstance().getReference("users").child(advocateUsername)
+
+                // Check if requestedBy field exists before overwriting
+                advocateReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.hasChild("requestedBy")) {
+                            advocateReference.child("requestedBy").setValue(clientId)
+                                .addOnSuccessListener {
+                                    Toast.makeText(this@Client_ConsultAdv, "Consultation request sent successfully!", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener { exception ->
+                                    Toast.makeText(this@Client_ConsultAdv, "Error updating advocate data: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Toast.makeText(this@Client_ConsultAdv, "Error: Advocate data structure might be missing 'requestedBy' field.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@Client_ConsultAdv, "Error fetching advocate data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            } else {
+                Toast.makeText(this@Client_ConsultAdv, "Error retrieving current user data", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }
 
-class AdvocateAdapter(private val advocateList: List<AdvocateInfo>, private val activity: Client_ConsultAdv) : RecyclerView.Adapter<AdvocateViewHolder>() {
+
+
+class AdvocateAdapter(context: Context, private val advocateList: ArrayList<AdvocateInfo>, private val consultationManager: ConsultationManager) :
+    RecyclerView.Adapter<AdvocateAdapter.AdvocateViewHolder>() {
+
+    private val mContext: Context = context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdvocateViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.case_card, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.case_card, parent, false)
         return AdvocateViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: AdvocateViewHolder, position: Int) {
         val advocate = advocateList[position]
-        holder.advocateNameTv.text = advocate.name
-        holder.specializationTv.text = advocate.specialization
-        holder.contactTv.text = advocate.contact
-        holder.addressTv.text = advocate.address
 
+        holder.advocateName.text = advocate.username
+        holder.specialization.text = advocate.specialization
+        holder.contact.text = advocate.mobileNo
+
+        // Consult Button Click Listener
         holder.consultButton.setOnClickListener {
+            // Implement logic to send a consultation request to the advocate
+            // This might involve sending a message or notification through Firebase
+            // or another communication channel
             val selectedAdvocate = advocateList[position]
+            consultationManager.sendConsultationRequest(selectedAdvocate.username)
+            Toast.makeText(mContext, "Sending consultation request..", Toast.LENGTH_SHORT).show()
+        }
 
-            // Get current client information using Firebase Authentication
-            val currentClient = activity.auth.currentUser
-            if (currentClient != null) {
-                val currentClientId = currentClient.uid
-                val currentClientName = currentClient.displayName ?: ""  // Handle potential null displayName
-
-                // Create a ConsultationRequest object
-                val consultationRequest = ConsultationRequest(currentClientId, currentClientName, selectedAdvocate.name)
-
-                // Access Firebase Realtime Database reference for consultation requests
-                val consultationRequestRef = activity.database.child("ConsultationRequests")
-
-                // Push the consultation request to Firebase
-                consultationRequestRef.push().setValue(consultationRequest)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(activity, "Sent consultation request to ${selectedAdvocate.name}", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(activity, "Failed to send request: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+        // Call Button Click Listener
+        holder.callButton.setOnClickListener {
+            val mobileNo = advocate.mobileNo
+            if (mobileNo.isNotEmpty()) {
+                val intent = Intent(Intent.ACTION_DIAL)
+                intent.data = Uri.parse("tel:$mobileNo")
+                mContext.startActivity(intent)
             } else {
-                Toast.makeText(activity, "Please sign in to send a request", Toast.LENGTH_SHORT).show()
+                Toast.makeText(mContext, "No phone number available", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Location Button Click Listener
+        holder.locationButton.setOnClickListener {
+            val address = advocate.address // Assuming address is provided
+            if (address.isNotEmpty()) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$address"))
+                // Check if map app is available before starting activity
+                if (intent.resolveActivity(mContext.packageManager) != null) {
+                    mContext.startActivity(intent)
+                } else {
+                    Toast.makeText(mContext, "No map app found", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(mContext, "No address available", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
     override fun getItemCount(): Int {
         return advocateList.size
     }
-}
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(newList: ArrayList<AdvocateInfo>, callback: () -> Unit) {
+        advocateList.clear()
+        advocateList.addAll(newList)
+        notifyDataSetChanged()
+        callback()
+    }
 
-
-
-class AdvocateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val advocateNameTv: TextView = itemView.findViewById(R.id.advocateName)
-    val specializationTv: TextView = itemView.findViewById(R.id.specialization)
-    val contactTv: TextView = itemView.findViewById(R.id.contact)
-    val addressTv: TextView = itemView.findViewById(R.id.address)
-    val consultButton: Button = itemView.findViewById(R.id.consultButton)
+    class AdvocateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val advocateImage: ImageView = itemView.findViewById(R.id.advocateImage)
+        val advocateName: TextView = itemView.findViewById(R.id.advocateName)
+        val specialization: TextView = itemView.findViewById(R.id.specialization)
+        val contact: TextView = itemView.findViewById(R.id.contact)
+        val consultButton: Button = itemView.findViewById(R.id.consultButton)
+        val callButton: Button = itemView.findViewById(R.id.callButton)
+        val locationButton: Button = itemView.findViewById(R.id.locationButton)
+    }
 }

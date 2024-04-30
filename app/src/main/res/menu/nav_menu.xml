@@ -13,20 +13,23 @@
 
         <item
             android:id="@+id/map"
-            android:icon="@drawable/baseline_home_24"
+            android:icon="@drawable/baseline_add_location_24"
             android:title="Show Map"/>
 
         <item
-            android:id="@+id/profile"
-            android:icon="@drawable/baseline_home_24"
-            android:title="Profile"/>
+            android:id="@+id/webview"
+            android:icon="@drawable/baseline_book_24"
+            android:title="Government Website"/>
 
         <item
-            android:id="@+id/share"
-            android:icon="@drawable/baseline_home_24"
-            android:title="Share"/>
+            android:id="@+id/brightness"
+            android:icon="@drawable/baseline_brightness_6_24"
+            android:title="Adjust Brightness"/>
 
-
+        <item
+            android:id="@+id/profile"
+            android:icon="@drawable/baseline_edit_square_24"
+            android:title="Profile"/>
 
     </group>
 
