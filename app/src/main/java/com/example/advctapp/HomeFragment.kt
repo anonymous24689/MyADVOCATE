@@ -1,14 +1,13 @@
 package com.example.advctapp
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,7 +20,6 @@ class HomeFragment : Fragment() {
     private lateinit var forAdvctBtn: Button
     private lateinit var auth: FirebaseAuth
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,23 +54,24 @@ class HomeFragment : Fragment() {
     }
 
     private fun handleUserType(userType: String) {
-        if (userType == "client") {
-            forClientBtn.visibility = View.VISIBLE
-            forClientBtn.setOnClickListener {
-                val intent = Intent(context, Client_ConsultAdv::class.java)
-                startActivity(intent)
+        when (userType) {
+            "client" -> {
+                forClientBtn.visibility = View.VISIBLE
+                forClientBtn.setOnClickListener {
+                    startActivity(Intent(context, Client_ConsultAdv::class.java))
+                }
+                forAdvctBtn.visibility = View.GONE
             }
-            forAdvctBtn.visibility = View.GONE
-        } else if (userType == "advocate") {
-            forClientBtn.visibility = View.GONE
-            forAdvctBtn.visibility = View.VISIBLE
-            forAdvctBtn.setOnClickListener {
-                val intent = Intent(context, Advocate_IncomingRequest::class.java)
-                startActivity(intent)
+            "advocate" -> {
+                forClientBtn.visibility = View.GONE
+                forAdvctBtn.visibility = View.VISIBLE
+                forAdvctBtn.setOnClickListener {
+                    startActivity(Intent(context, Advocate_IncomingRequest::class.java))
+                }
             }
-        } else {
-            // Handle unexpected user type (optional)
-            Toast.makeText(context, "Unknown user type", Toast.LENGTH_SHORT).show()
+            else -> {
+                Toast.makeText(context, "Unknown user type", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

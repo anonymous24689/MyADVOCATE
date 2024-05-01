@@ -24,7 +24,7 @@
         android:theme="@style/Theme.AdvctApp"
         tools:targetApi="31">
         <activity
-            android:name=".SignUpPage"
+            android:name=".AppSignUp"
             android:exported="false" />
         <activity
             android:name=".Client_ConsultAdv"

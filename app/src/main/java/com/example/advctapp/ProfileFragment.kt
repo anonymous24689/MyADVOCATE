@@ -42,7 +42,7 @@ private fun retrieveUserDetails(userId: String) {
     database.child(userId).get().addOnSuccessListener { snapshot ->
         if (snapshot.exists()) {
             val user = snapshot.getValue(UserData::class.java)
-            usernameTv.text = user?.username ?: ""
+            usernameTv.text = user?.name ?: ""
             emailTv.text = user?.email ?: ""
             mobileNoTv.text = user?.mobileNo ?: ""
             addressTv.text = user?.address ?: ""
