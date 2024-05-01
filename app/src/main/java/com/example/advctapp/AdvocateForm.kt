@@ -71,7 +71,7 @@ class AdvocateForm : AppCompatActivity() {
         }
 
 //        val advocate = AdvocateInfo(profile, username, occupation, mobileNo, address)
-        val advocate = AdvocateInfo(username, occupation, mobileNo, address, requestedBy)
+        val advocate = AdvocateInfo(username, occupation, mobileNo, address)
 
 
         val userRef = database.child(userId)

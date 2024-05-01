@@ -1,127 +1,87 @@
 package com.example.advctapp
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.android.gms.maps.*
+import androidx.fragment.app.Fragment
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.io.IOException
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
-    private lateinit var mapView: MapView
-    private val PERMISSIONS_REQUEST_LOCATION = 160
-    private lateinit var database: FirebaseDatabase
-    private lateinit var userRef: DatabaseReference
-    private var userId: String = ""
+    private lateinit var mapView: SupportMapFragment
+    private lateinit var mMap: GoogleMap
+    private lateinit var database: DatabaseReference
+    private lateinit var auth: FirebaseAuth
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
 
-        mapView = view.findViewById(R.id.map_view)
-
-        mapView.onCreate(savedInstanceState)
-        mapView.onResume()
+        mapView = childFragmentManager.findFragmentById(R.id.map_view) as SupportMapFragment
         mapView.getMapAsync(this)
 
-        database = FirebaseDatabase.getInstance()
-
-        userId = arguments?.getString("userId") ?: ""
-        userRef = database.getReference("users/$userId")
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance().reference
 
         return view
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        if (checkLocationPermission()) {
-            googleMap.isMyLocationEnabled = true
+        mMap = googleMap
 
-            // Fetch user address from Firebase
-            userRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        val address = dataSnapshot.child("address").getValue(String::class.java) ?: ""
-                        if (address.isNotEmpty()) {
-                            showUserLocation(address, googleMap)
+        // Fetch the user's address from Firebase Realtime Database
+        val currentUser = auth.currentUser
+        currentUser?.uid?.let { userId ->
+            database.child("users").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val address = snapshot.child("address").getValue(String::class.java)
+                    address?.let {
+                        // Geocode the address to get its latitude and longitude
+                        try {
+                            val geoCoder = Geocoder(requireContext())
+                            val addresses = geoCoder.getFromLocationName(it, 1)
+                            if (addresses != null) {
+                                if (addresses.isNotEmpty()) {
+                                    val location = LatLng(addresses[0].latitude, addresses[0].longitude)
+
+                                    // Add a marker for the location and move the camera
+                                    mMap.addMarker(MarkerOptions().position(location).title(it))
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_ZOOM))
+                                }
+                            }
+                        } catch (e: IOException) {
+                            // Handle Geocoder exceptions
+                            Log.e(TAG, "Geocoder exception: ${e.message}")
+                            Toast.makeText(requireContext(), "Geocoder exception: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Error fetching user data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    // Handle database error
+                    Log.e(TAG, "Database error: ${error.message}")
+                    Toast.makeText(requireContext(), "Database error: ${error.message}", Toast.LENGTH_LONG).show()
                 }
             })
-        } else {
-            requestLocationPermission()
         }
     }
 
-    private fun showUserLocation(address: String, googleMap: GoogleMap) {
-        val geocoder = Geocoder(requireContext())
-        val addresses: List<Address>? = geocoder.getFromLocationName(address, 1)
-
-        if (addresses != null) {
-            if (addresses.isNotEmpty()) {
-                val location = addresses[0]
-                val latitude = location.latitude
-                val longitude = location.longitude
-                val userLocation = LatLng(latitude, longitude)
-
-                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 12f)
-                googleMap.animateCamera(cameraUpdate)
-
-                googleMap.addMarker(
-                    MarkerOptions().position(userLocation).title("Your Location")
-                )
-            } else {
-                Toast.makeText(context, "Address can't be geocoded.", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    private fun checkLocationPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            PERMISSIONS_REQUEST_LOCATION
-        )
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mapView.getMapAsync(this)
-            } else {
-                Toast.makeText(context, "Permission Denied.", Toast.LENGTH_LONG).show()
-            }
-        }
+    companion object {
+        private const val DEFAULT_ZOOM = 15f
+        private const val TAG = "MapFragment"
     }
 }
