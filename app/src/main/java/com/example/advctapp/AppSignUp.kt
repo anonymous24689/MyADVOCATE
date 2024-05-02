@@ -118,6 +118,7 @@ class AppSignUp : AppCompatActivity() {
         textView.setOnClickListener {
             val intent = Intent(this, AppLogIn::class.java)
             startActivity(intent)
+            overridePendingTransition(R.anim.animate_slide_left_enter,R.anim.animate_slide_out_right)
             finish()
         }
     }

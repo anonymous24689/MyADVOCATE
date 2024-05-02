@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.core.app.ActivityOptionsCompat
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -58,7 +59,17 @@ class HomeFragment : Fragment() {
             "client" -> {
                 forClientBtn.visibility = View.VISIBLE
                 forClientBtn.setOnClickListener {
-                    startActivity(Intent(context, ConsultationMain::class.java))
+//                    startActivity(Intent(context, ConsultationMain::class.java))
+                    val intent = Intent(context, ConsultationMain::class.java)
+
+                    val options = ActivityOptionsCompat.makeCustomAnimation(
+                        requireContext(),
+                        R.anim.animate_slide_left_exit,
+                        R.anim.animate_slide_left_enter // Animation to finish the current activity
+                    )
+
+                    // Start the activity with the specified options
+                    startActivity(intent, options.toBundle())
                 }
                 forAdvctBtn.visibility = View.GONE
             }

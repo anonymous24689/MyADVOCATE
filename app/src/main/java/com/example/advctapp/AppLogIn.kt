@@ -46,6 +46,7 @@ class AppLogIn : AppCompatActivity() {
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, MainActivity::class.java))
+                    overridePendingTransition(R.anim.animate_slide_left_exit,R.anim.animate_slide_left_enter)
                     finish()
                 } else {
                     Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -57,6 +58,7 @@ class AppLogIn : AppCompatActivity() {
         textView.setOnClickListener {
             val intent = Intent(this, AppSignUp::class.java)
             startActivity(intent)
+            overridePendingTransition(R.anim.animate_slide_left_exit,R.anim.animate_slide_left_enter)
             finish()
         }
     }
