@@ -76,6 +76,7 @@ class ConsultationAdapter(
         callback()
     }
 
+
     class ConsultationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val advocateName: TextView = itemView.findViewById(R.id.advocateName)
         val specialisation: TextView = itemView.findViewById(R.id.specialization)

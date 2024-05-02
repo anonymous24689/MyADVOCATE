@@ -10,39 +10,4 @@
     android:padding="20dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-<!--    <ImageView-->
-<!--        android:id="@+id/profile_image"-->
-<!--        android:layout_width="88dp"-->
-<!--        android:layout_height="80dp"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:src="@drawable/profilepic"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.0"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/user_name"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="16dp"-->
-<!--        android:hint="User Name"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="18sp"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/profile_image" />-->
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/imageButton"-->
-<!--        android:layout_width="60dp"-->
-<!--        android:layout_height="60dp"-->
-<!--        android:layout_marginEnd="12dp"-->
-<!--        android:layout_marginTop="12dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:srcCompat="@drawable/baseline_brightness_6_24"-->
-<!--        android:contentClickable="true"-->
-<!--        android:contentDescription="Brightness" />-->
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,17 +1,9 @@
 package com.example.advctapp
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,7 +16,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 
 
-class Advocate_IncomingRequest : AppCompatActivity() {
+class IncomingRequestMain : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var requestRecyclerView: RecyclerView
@@ -34,7 +26,7 @@ class Advocate_IncomingRequest : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_advocate_incomingrequest)
+        setContentView(R.layout.activity_incomingrequest_main)
 
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
@@ -74,7 +66,7 @@ class Advocate_IncomingRequest : AppCompatActivity() {
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(
-                    this@Advocate_IncomingRequest, "Error fetching data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    this@IncomingRequestMain, "Error fetching data: ${error.message}", Toast.LENGTH_SHORT).show()
                 progressBar.visibility = View.GONE
             }
         })

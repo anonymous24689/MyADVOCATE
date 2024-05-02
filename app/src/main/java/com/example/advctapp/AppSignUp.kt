@@ -118,6 +118,7 @@ class AppSignUp : AppCompatActivity() {
         textView.setOnClickListener {
             val intent = Intent(this, AppLogIn::class.java)
             startActivity(intent)
+            finish()
         }
     }
 }

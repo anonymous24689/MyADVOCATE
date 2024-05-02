@@ -1,87 +1,126 @@
 package com.example.advctapp
 
+import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import java.io.IOException
+import android.Manifest.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
 
-class MapFragment : Fragment(), OnMapReadyCallback {
 
-    private lateinit var mapView: SupportMapFragment
-    private lateinit var mMap: GoogleMap
-    private lateinit var database: DatabaseReference
+class MapFragment : Fragment() {
+
+    private lateinit var googleMap: GoogleMap
     private lateinit var auth: FirebaseAuth
+    private lateinit var database: FirebaseDatabase
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
-
-        mapView = childFragmentManager.findFragmentById(R.id.map_view) as SupportMapFragment
-        mapView.getMapAsync(this)
+        val rootView = inflater.inflate(R.layout.fragment_map, container, false)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance().reference
+        database = FirebaseDatabase.getInstance()
 
-        return view
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+
+        // Initialize the map directly
+        mapFragment.getMapAsync { gMap ->
+            googleMap = gMap
+            onMapReady(googleMap)
+        }
+
+        return rootView
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+    private fun onMapReady(gMap: GoogleMap) {
+        googleMap = gMap
 
-        // Fetch the user's address from Firebase Realtime Database
-        val currentUser = auth.currentUser
-        currentUser?.uid?.let { userId ->
-            database.child("users").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val address = snapshot.child("address").getValue(String::class.java)
-                    address?.let {
-                        // Geocode the address to get its latitude and longitude
-                        try {
-                            val geoCoder = Geocoder(requireContext())
-                            val addresses = geoCoder.getFromLocationName(it, 1)
-                            if (addresses != null) {
-                                if (addresses.isNotEmpty()) {
-                                    val location = LatLng(addresses[0].latitude, addresses[0].longitude)
+        if (ContextCompat.checkSelfPermission(requireContext(), permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(requireContext(), permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.isMyLocationEnabled = true
 
-                                    // Add a marker for the location and move the camera
-                                    mMap.addMarker(MarkerOptions().position(location).title(it))
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_ZOOM))
+            // Get user's location from the address stored in the database
+            val currentUserID = auth.currentUser?.uid ?: return
+            val userRef = database.getReference("users/$currentUserID")
+
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val address = dataSnapshot.child("address").getValue(String::class.java) ?: ""
+                    if (address.isNotEmpty()) {
+                        val geoCoder = Geocoder(requireContext())
+                        val locationList: MutableList<Address>? =
+                            geoCoder.getFromLocationName(address, 1)
+
+                        if (locationList != null) {
+                            val userLocation = LatLng(
+                                locationList[0].latitude,
+                                locationList[0].longitude
+                            )
+
+                            // Move camera to the user's location
+                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+
+                            val radiusInMeters = 4000 // Search radius in meters
+                            val advocateQuery = database.getReference("users")
+                                .orderByChild("address")
+                                .startAt(
+                                    GeoFireUtils.getGeoHashForLocation(GeoLocation(userLocation.latitude, userLocation.longitude)))
+                                .endAt(
+                                    GeoFireUtils.getGeoHashForLocation(GeoLocation(userLocation.latitude, userLocation.longitude)) + "\uf8ff"
+                                )
+                                .limitToLast(10)
+
+                            advocateQuery.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    for (advocateSnapshot in snapshot.children) {
+                                        val advocateAddress = advocateSnapshot.child("address").getValue(String::class.java)
+                                        // Add marker for each advocate found near the user's location
+                                        advocateAddress?.let {
+                                            val advocateLocation = geoCoder.getFromLocationName(advocateAddress, 1)
+                                            if (advocateLocation != null) {
+                                                if (advocateLocation.isNotEmpty()) {
+                                                    val advocateLatLng = LatLng(
+                                                        advocateLocation[0].latitude,
+                                                        advocateLocation[0].longitude
+                                                    )
+                                                    googleMap.addMarker(
+                                                        MarkerOptions().position(advocateLatLng).title("Advocate")
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                        } catch (e: IOException) {
-                            // Handle Geocoder exceptions
-                            Log.e(TAG, "Geocoder exception: ${e.message}")
-                            Toast.makeText(requireContext(), "Geocoder exception: ${e.message}", Toast.LENGTH_LONG).show()
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    Toast.makeText(context, "Failed to search for Lawyers near me.", Toast.LENGTH_SHORT).show()
+                                }
+                            })
                         }
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database error
-                    Log.e(TAG, "Database error: ${error.message}")
-                    Toast.makeText(requireContext(), "Database error: ${error.message}", Toast.LENGTH_LONG).show()
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Toast.makeText(context, "Failed to show Lawyers around me.", Toast.LENGTH_SHORT).show()
                 }
             })
         }
-    }
-
-    companion object {
-        private const val DEFAULT_ZOOM = 15f
-        private const val TAG = "MapFragment"
     }
 }

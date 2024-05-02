@@ -12,19 +12,25 @@
             android:title="Home"/>
 
         <item
-            android:id="@+id/map"
-            android:icon="@drawable/baseline_add_location_24"
-            android:title="Show Map"/>
-
-        <item
             android:id="@+id/webview"
             android:icon="@drawable/baseline_book_24"
             android:title="Government Website"/>
 
         <item
+            android:id="@+id/map"
+            android:icon="@drawable/baseline_add_location_24"
+            android:title="Show Map"/>
+
+        <item
+            android:id="@+id/connections"
+            android:icon="@drawable/baseline_brightness_6_24"
+            android:title="Check Connectivity"/>
+
+
+        <item
             android:id="@+id/brightness"
             android:icon="@drawable/baseline_brightness_6_24"
-            android:title="Adjust Brightness"/>
+            android:title="Check Brightness"/>
 
         <item
             android:id="@+id/profile"

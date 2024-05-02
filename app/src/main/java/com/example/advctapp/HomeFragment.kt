@@ -58,7 +58,7 @@ class HomeFragment : Fragment() {
             "client" -> {
                 forClientBtn.visibility = View.VISIBLE
                 forClientBtn.setOnClickListener {
-                    startActivity(Intent(context, Client_ConsultAdv::class.java))
+                    startActivity(Intent(context, ConsultationMain::class.java))
                 }
                 forAdvctBtn.visibility = View.GONE
             }
@@ -66,7 +66,7 @@ class HomeFragment : Fragment() {
                 forClientBtn.visibility = View.GONE
                 forAdvctBtn.visibility = View.VISIBLE
                 forAdvctBtn.setOnClickListener {
-                    startActivity(Intent(context, Advocate_IncomingRequest::class.java))
+                    startActivity(Intent(context, IncomingRequestMain::class.java))
                 }
             }
             else -> {

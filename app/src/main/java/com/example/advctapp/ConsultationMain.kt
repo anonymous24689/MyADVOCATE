@@ -17,7 +17,7 @@ interface ConsultationManager {
 }
 
 
-class Client_ConsultAdv : AppCompatActivity(), ConsultationManager {
+class ConsultationMain : AppCompatActivity(), ConsultationManager {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var progressBar: ProgressBar
@@ -26,7 +26,7 @@ class Client_ConsultAdv : AppCompatActivity(), ConsultationManager {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_client_consultadv)
+        setContentView(R.layout.activity_consultation_main)
 
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
@@ -91,15 +91,15 @@ class Client_ConsultAdv : AppCompatActivity(), ConsultationManager {
                 // Save the request to the database
                 requestsRef.child(requestID).setValue(request)
                     .addOnSuccessListener {
-                        Toast.makeText(this@Client_ConsultAdv, "Consultation request sent", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ConsultationMain, "Consultation request sent", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(this@Client_ConsultAdv, "Failed to send consultation request", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ConsultationMain, "Failed to send consultation request", Toast.LENGTH_SHORT).show()
                     }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@Client_ConsultAdv, "Failed to retrieve client information", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ConsultationMain, "Failed to retrieve client information", Toast.LENGTH_SHORT).show()
             }
         })
     }

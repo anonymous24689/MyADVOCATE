@@ -6,21 +6,25 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
 
 class SplashScreen : AppCompatActivity() {
+
+    lateinit var iv : ImageView
+    lateinit var anim: Animation
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splashscreen)
 
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            val i = Intent(this@SplashScreen, AppLogIn::class.java)
-//            startActivity(i)
-//            finish()
-//        }, 2000)
+        iv = findViewById(R.id.imageView)
+        anim = AnimationUtils.loadAnimation(this, R.anim.blink)
+        iv.startAnimation(anim)
 
         Handler(Looper.getMainLooper()).postDelayed({
-
             if (FirebaseAuth.getInstance().currentUser != null){
                 startActivity(Intent(this, MainActivity::class.java))
             }
@@ -29,6 +33,6 @@ class SplashScreen : AppCompatActivity() {
             }
 
             finish()
-        },2000)
+        },2800)
     }
 }

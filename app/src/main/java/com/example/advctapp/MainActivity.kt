@@ -14,6 +14,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -39,10 +40,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.home -> replaceFragment(HomeFragment())
             R.id.map -> replaceFragment(MapFragment())
+            R.id.connections -> replaceFragment(ConnectivityFragment())
             R.id.webview -> replaceFragment(WebViewFragment())
             R.id.brightness -> replaceFragment(BrightnessFragment())
             R.id.profile -> replaceFragment(ProfileFragment())
@@ -52,11 +55,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
+
 
     private fun showLogoutConfirmation() {
         AlertDialog.Builder(this)
@@ -82,4 +87,3 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 }
-

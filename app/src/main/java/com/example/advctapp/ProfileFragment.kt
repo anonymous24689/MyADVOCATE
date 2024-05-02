@@ -38,19 +38,19 @@ class ProfileFragment : Fragment() {
         return view
     }
 
-private fun retrieveUserDetails(userId: String) {
-    database.child(userId).get().addOnSuccessListener { snapshot ->
-        if (snapshot.exists()) {
-            val user = snapshot.getValue(UserData::class.java)
-            usernameTv.text = user?.name ?: ""
-            emailTv.text = user?.email ?: ""
-            mobileNoTv.text = user?.mobileNo ?: ""
-            addressTv.text = user?.address ?: ""
-        } else {
-            Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+    private fun retrieveUserDetails(userId: String) {
+        database.child(userId).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val user = snapshot.getValue(UserData::class.java)
+                usernameTv.text = user?.name ?: ""
+                emailTv.text = user?.email ?: ""
+                mobileNoTv.text = user?.mobileNo ?: ""
+                addressTv.text = user?.address ?: ""
+            } else {
+                Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Error retrieving user details", Toast.LENGTH_SHORT).show()
         }
-    }.addOnFailureListener {
-        Toast.makeText(context, "Error retrieving user details", Toast.LENGTH_SHORT).show()
     }
-}
 }
